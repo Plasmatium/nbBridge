@@ -64,6 +64,7 @@ async function handleHttp(data) {
     headers
   }, res)
   res.status(status).send(new Buffer(body.data))
+  setTimeout(() => delete resPool[uuid], 1000)
 }
 
 /**
@@ -108,25 +109,4 @@ app.ws('/api/kernels/*', function (ws, req) {
   wsNativeClient = ws
 })
 
-// app.ws('/api/kernels/*', function (ws, req) {
-//   const headers = req.headers
-
-//   const url = `ws://${NBHOST}` + req.originalUrl.replace('/.websocket', '')
-//   delete req.headers['sec-websocket-key']
-//   const wsClient = new WS(url, { headers: req.headers })
-
-//   ws.on('message', (data) => {
-//     // 8765来的jsonData，要送往8888
-//     wsClient.readyState === 1 && wsClient.send(data)
-//   })
-
-//   wsClient.onmessage = (resp) => {
-//     // 8888来的数据，要送往8765
-//     ws.readyState === 1 && ws.send(resp.data)
-//   }
-
-//   Object.assign(global, { wsClient, ws })
-// })
-
-// app.listen({port: 5678, host: '192.168.30.186'})
-app.listen({port: 5678})
+app.listen({port: 8080})
