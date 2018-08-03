@@ -4,6 +4,7 @@ const qs = require('qs')
 const WS = require('ws')
 const genUUID = require('uuid').v4
 
+require('colors')
 
 const resPool = {} // 存放从hws返回的response的res对象
 let wsNativeClient = {readyState: -1}
@@ -29,6 +30,7 @@ function applyHeaders(resp, res) {
 const higherOrderWS = new WS.Server({ port: 8086 })
 let hws = {readyState: -1}// 高阶ws，用于远端和8888通讯
 higherOrderWS.on('connection', function connection(ws) {
+  console.log('HWS connected'.green)
   hws = ws
   hws.onmessage = async (event) => {
     const data = JSON.parse(event.data)
@@ -75,7 +77,7 @@ async function handleHttp(data) {
 app.all('/*', async function (req, res, next) {
   let { originalUrl, method, headers, body } = req
   headers.referer = 'http://localhost:8765'
-  console.log('%cmethod:' + method + ' => ' + originalUrl, 'color: #ff9900')
+  console.log(`method: ${method} => ${originalUrl}`.yellow)
   if (originalUrl.includes('/.websocket')) {
     // 来自browser的建立websocket请求
     return next()
