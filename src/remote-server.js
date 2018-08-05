@@ -1,7 +1,6 @@
 const WS = require('ws')
 // const genUUID = require('uuid').v4
 const axios = require('axios')
-const {fkData, defkData} = require('./utils.js')
 
 require('colors')
 
