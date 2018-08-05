@@ -24,7 +24,8 @@ function fkData (data) {
   const buf = Buffer.concat([crypted, end])
 
   const zipLen = buf.length
-  console.log(`compress ratio: ${(zipLen/origLen).toFixed(4)}`.cyan,
+  console.log(`[${new Date().toLocaleString()}`.grey,
+              `compress ratio: ${(zipLen/origLen).toFixed(4)}`.cyan,
               `detail: ${zipLen} / ${origLen}`.magenta)
   return buf
 }

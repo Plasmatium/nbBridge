@@ -46,7 +46,8 @@ function showSizeInfo () {
 
   lastTransfered = totalTransfered
   const sizeData = toThousands(totalTransfered)
-  console.log(`total transfered: ${totalTransfered} bytes`.red)
+  console.log(`[${new Date().toLocaleString()}`.grey, 
+              `total transfered: ${totalTransfered} bytes`.red)
 }
 
 setInterval(showSizeInfo, 10000)
