@@ -12,7 +12,7 @@ let {REMOTE_HWS_URL, LOCAL_HWS_URL} = JSON.parse(fs.readFileSync(confDir))
 // REMOTE_HWS_URL = LOCAL_HWS_URL
 const NBHOST = 'localhost:8888'
 
-let wsClient = {readyState: -1}
+let wsClients = {}
 const hws = new WS(REMOTE_HWS_URL)
 
 hws.onmessage = async (event) => {
@@ -40,24 +40,28 @@ hws.onmessage = async (event) => {
 
 async function handleWSMessage (data) {
   // 浏览器发来的ws信息，转送到8888
-  delete data['type']
-  wsClient.readyState === 1 && wsClient.send(JSON.stringify(data))
+  const {uuid} = data
+  const ws = wsClients[uuid]
+  ws && ws.readyState === 1 && ws.send(JSON.stringify(data))
 }
 
 async function handleCreateWS (data) {
-  const {headers, originalUrl} = data
+  const {headers, originalUrl, uuid} = data
   const url = `ws://${NBHOST}` + originalUrl.replace('/.websocket', '')
   forgeAndModify(headers) // 伪造referer和host
   delete headers['sec-websocket-key']
 
-  wsClient = new WS(url, {headers})
-  wsClient.onmessage = async (event) => {
+  ws = new WS(url, {headers})
+  ws.uuid = uuid
+  ws.onmessage = async (event) => {
     console.log('nbserver ws send'.yellow.italic)
     const data = JSON.parse(event.data)
     data.type = 'WSMessage'
+    data.uuid = uuid
     const buf = fkData(JSON.stringify(data))
     hws.send(buf)
   }
+  wsClients[uuid] = ws
 }
 
 async function handleHttp (data) {

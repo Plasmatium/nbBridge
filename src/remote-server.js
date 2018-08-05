@@ -2,7 +2,16 @@ const WS = require('ws')
 require('colors')
 
 function toThousands(num) {
-  return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
+  if (num < 1e6) {
+    num = Math.round(num / 1e3)
+    size = (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,')
+    size += ' kb'
+  } else {
+    num = Math.round(num / 1e6)
+    size = (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,')
+    size += ' Mb'
+  }
+  return size
 }
 
 let totalTransfered = 0
@@ -47,7 +56,7 @@ function showSizeInfo () {
   lastTransfered = totalTransfered
   const sizeData = toThousands(totalTransfered)
   console.log(`[${new Date().toLocaleString()}]`.grey, 
-              `total transfered: ${sizeData} bytes`.red)
+              `total transfered: ${sizeData}`.red)
 }
 
 setInterval(showSizeInfo, 10000)

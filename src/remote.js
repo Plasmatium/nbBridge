@@ -18,7 +18,7 @@ let {
 require('colors')
 
 const resPool = {} // 存放从hws返回的response的res对象
-let wsNativeClient = {readyState: -1}
+let wsBrowsers = {}
 
 app = express()
 app.use(bodyParser.json({
@@ -59,9 +59,9 @@ hws.onmessage = async (event) => {
 }
 
 async function handleWSMessage(data) {
-  const ws = wsNativeClient
-  delete data['type']
-  ws.readyState === 1 && ws.send(JSON.stringify(data))
+  const {uuid} = data
+  const ws = wsBrowsers[uuid]
+  ws && ws.readyState === 1 && ws.send(JSON.stringify(data))
 }
 
 async function handleHttp(data) {
@@ -113,12 +113,14 @@ app.all('/*', async function (req, res, next) {
   hws.readyState === 1 && hws.send(buf)
 })
 
-app.ws('/api/kernels/*', function (ws, req) {
+function dealWithWS(ws, req) {
   // 发送建立ws到8888的请求
+  const uuid = genUUID()
   const data = JSON.stringify({
     type: 'createWS',
     headers: req.headers,
     originalUrl: req.originalUrl,
+    uuid,
   })
   const buf = fkData(data)
   hws.readyState === 1 && hws.send(buf)
@@ -129,10 +131,18 @@ app.ws('/api/kernels/*', function (ws, req) {
     console.log('browser ws send'.green.italic)
     const data = JSON.parse(event.data)
     data.type = 'WSMessage'
+    data.uuid = uuid
     const buf = fkData(JSON.stringify(data))
     hws.readyState === 1 && hws.send(buf)
   }
-  wsNativeClient = ws
-})
+  wsBrowsers[uuid] = ws
+}
+
+function listenWS(path, func) {
+  app.ws(path, func)
+}
+listenWS('/api/kernels/*', dealWithWS)
+// terminal 无法运行，有待排查。不过在ipynb中使用：!instructions 非常方便
+listenWS('/terminals/websocket/*', dealWithWS)
 
 app.listen({port: 8080})
