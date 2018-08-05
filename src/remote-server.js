@@ -1,9 +1,11 @@
 const WS = require('ws')
-// const genUUID = require('uuid').v4
-const axios = require('axios')
-
 require('colors')
 
+function toThousands(num) {
+  return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
+}
+
+let totalTransfered = 0
 const hws = {}
 
 const higherOrderWS = new WS.Server({port: 8086})
@@ -33,5 +35,18 @@ higherOrderWS.on('connection', function connection(ws) {
         hws.nbserver.send(event.data)
       }
     }
+
+    totalTransfered += event.data.length
   }
 })
+
+let lastTransfered = totalTransfered
+function showSizeInfo () {
+  if (lastTransfered === totalTransfered) { return }
+
+  lastTransfered = totalTransfered
+  const sizeData = toThousands(totalTransfered)
+  console.log(`total transfered: ${totalTransfered} bytes`.red)
+}
+
+setInterval(showSizeInfo, 10000)

@@ -1,7 +1,4 @@
-const express = require('express')
 const axios = require('axios')
-const bodyParser = require('body-parser')
-const qs = require('qs')
 const WS = require('ws')
 const {fkData, defkData} = require('./utils.js')
 
@@ -12,7 +9,7 @@ const path = require('path')
 
 const confDir = path.join(__dirname, 'conf.json')
 let {REMOTE_HWS_URL, LOCAL_HWS_URL} = JSON.parse(fs.readFileSync(confDir))
-REMOTE_HWS_URL = LOCAL_HWS_URL
+// REMOTE_HWS_URL = LOCAL_HWS_URL
 const NBHOST = 'localhost:8888'
 
 let wsClient = {readyState: -1}

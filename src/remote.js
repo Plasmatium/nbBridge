@@ -13,7 +13,7 @@ let {
   REMOTE_HWS_URL,
   LOCAL_HWS_URL
 } = JSON.parse(fs.readFileSync(confDir))
-REMOTE_HWS_URL = LOCAL_HWS_URL
+// REMOTE_HWS_URL = LOCAL_HWS_URL
 
 require('colors')
 
@@ -76,13 +76,11 @@ async function handleHttp(data) {
   if (!res) return
   applyHeaders({ headers }, res)
   
-  let bodyData
-  if (typeof body === 'string') {
-    bodyData = body
-  } else {
-    bodyData = Buffer.from(body.data)
-  }
-  res.status(status).send(bodyData)
+  // 如果是非text类型的，那么过来的是b64，要转成buffer
+  const isText = /text|application/.test(headers['content-type'])
+  const respData = isText ? body : Buffer.from(body, 'base64')
+
+  res.status(status).send(respData)
   setTimeout(() => delete resPool[uuid], 1000)
 }
 
@@ -96,8 +94,12 @@ app.all('/*', async function (req, res, next) {
   // headers.referer = 'http://localhost:8765'
   console.log(`method: ${method} => ${originalUrl}`.yellow)
   if (originalUrl.includes('/.websocket')) {
-    // 来自browser的建立websocket请求
+    // 来自browser的建立websocket请求，转给下个中间件处理，这个中间件返回
     return next()
+  }
+  // 忽略 .js.map 和 .css.map文件，res返回403，中间件函数直接返回
+  if (/(\.js|\.css)\.map/.test(originalUrl)) {
+    return res.status(403).send('no map file')
   }
 
   // http请求，通过高阶hws发过去
