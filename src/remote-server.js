@@ -17,8 +17,9 @@ higherOrderWS.on('connection', function connection(ws) {
       console.log('browser added'.blue)
       // const uuid = 'browser-' + genUUID()
       // hws[uuid] = ws
-      hws.browser && hws.browser.close()
+      hws.last_browser && hws.last_browser.close()
       hws.browser = ws
+      hws.last_browser = ws
     } else if (event.data === 'nbserver') {
       console.log('nbserver established'.magenta)
       hws.nbserver = ws
