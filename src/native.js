@@ -13,30 +13,45 @@ let {REMOTE_HWS_URL, LOCAL_HWS_URL} = JSON.parse(fs.readFileSync(confDir))
 const NBHOST = 'localhost:8888'
 
 let wsClients = {}
-const hws = new WS(REMOTE_HWS_URL)
+let hws = {readyState: -1}
 
-hws.onmessage = async (event) => {
-  // 远端高阶ws请求label，需自曝家门
-  if (event.data === 'request label') {
-    hws.send('nbserver')
-    return
-  }
+function restartHWS() {
+  console.log('********* reconnecting hws *********'.red)
+  hws = new WS(REMOTE_HWS_URL)
+  hws.onmessage = async (event) => {
+    // 远端高阶ws请求label，需自曝家门
+    if (event.data === 'request label') {
+      hws.send('nbserver')
+      return
+    }
 
-  const data = JSON.parse(defkData(event.data).toString())
-  switch (data.type) {
-    case 'http':
-    handleHttp(data)
-    break
+    const data = JSON.parse(defkData(event.data).toString())
+    switch (data.type) {
+      case 'http':
+        handleHttp(data)
+        break
 
-    case 'createWS':
-    handleCreateWS(data)
-    break
+      case 'createWS':
+        handleCreateWS(data)
+        break
 
-    case 'WSMessage':
-    handleWSMessage(data)
-    break
+      case 'WSMessage':
+        handleWSMessage(data)
+        break
+    }
   }
 }
+
+setInterval(() => {
+  // 没每10秒检测一次hws是否有效，如果已经挂了，那么重链接
+  if (hws.readyState === 1) { return }
+  try {
+    // TODO：出错无法catch到
+    restartHWS()
+  } catch (err) {
+    console.log('reconnecting failed, remote server err'.red)
+  }
+}, 10000)
 
 async function handleWSMessage (data) {
   // 浏览器发来的ws信息，转送到8888
