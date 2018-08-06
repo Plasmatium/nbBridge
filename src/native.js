@@ -14,9 +14,11 @@ const NBHOST = 'localhost:8888'
 
 let wsClients = {}
 let hws = {readyState: -1}
-
-function restartHWS() {
-  console.log('********* reconnecting hws *********'.red)
+function reconnectHWS() {
+  if (hws.readyState === 1) { return }
+  console.log(`\n[${new Date().toLocaleString()}]`.grey,
+              `********* reconnecting hws *********`.red)
+  
   hws = new WS(REMOTE_HWS_URL)
   hws.onmessage = async (event) => {
     // 远端高阶ws请求label，需自曝家门
@@ -40,18 +42,15 @@ function restartHWS() {
         break
     }
   }
-}
-
-setInterval(() => {
-  // 没每10秒检测一次hws是否有效，如果已经挂了，那么重链接
-  if (hws.readyState === 1) { return }
-  try {
-    // TODO：出错无法catch到
-    restartHWS()
-  } catch (err) {
-    console.log('reconnecting failed, remote server err'.red)
+  hws.onclose = async (event) => {
+    setTimeout(reconnectHWS, 1000)
   }
-}, 10000)
+  hws.onerror = async (event) => {
+    console.log('err: hws error'.red)
+    console.log(String(event.message).red)
+  }
+}
+reconnectHWS()
 
 async function handleWSMessage (data) {
   // 浏览器发来的ws信息，转送到8888
@@ -103,7 +102,8 @@ async function handleHttp (data) {
   headers = resp.headers
   status = resp.status
 
-  if (/text|application/.test(headers['content-type'])) {
+  const isText = /text|plain|json|xml|html|htm|css|js|javascript/.test(headers['content-type'])
+  if (isText) {
     body = body.toString()
   } else if (body.length === 0) {
     body = '' // 返回是304，body直接改成0，否则会变成{type: "Buffer", data: [0]}

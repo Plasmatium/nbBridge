@@ -38,6 +38,15 @@ higherOrderWS.on('connection', function connection(ws) {
 
     totalTransfered += event.data.length
   }
+  ws.onclose = async (event) => {
+    const { nbserver, browser } = hws
+    nbserver && nbserver.close()
+    browser && browser.close()
+  }
+  ws.onerror = async (event) => {
+    console.log(`\n[${new Date().toLocaleString()}]`.grey,
+    `serverside hws err: ${event.message}`.red)
+  }
 })
 
 let lastTransfered = totalTransfered

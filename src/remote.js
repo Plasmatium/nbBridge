@@ -36,27 +36,43 @@ function applyHeaders(resp, res) {
   })
 }
 
-const hws = new WS(REMOTE_HWS_URL)
+let hws = {readyState: -1}
+function reconnectHWS () {
+  if (hws.readyState === 1) { return }
+  console.log(`\n[${new Date().toLocaleString()}]`.grey,
+              `********* reconnecting hws *********`.red)
 
-hws.onmessage = async (event) => {
-  // 远端高阶ws请求label，需自曝家门
-  if (event.data === 'request label') {
-    hws.send('browser')
-    return
+  hws = new WS(REMOTE_HWS_URL)
+  hws.onmessage = async (event) => {
+    // 远端高阶ws请求label，需自曝家门
+    if (event.data === 'request label') {
+      hws.send('browser')
+      return
+    }
+
+    const data = JSON.parse(defkData(event.data).toString())
+    // 以下是正常通讯message
+    switch (data.type) {
+      case 'http':
+      handleHttp(data)
+      break
+
+      case 'WSMessage':
+      handleWSMessage(data)
+      break
+    }
   }
-
-  const data = JSON.parse(defkData(event.data).toString())
-  // 以下是正常通讯message
-  switch (data.type) {
-    case 'http':
-    handleHttp(data)
-    break
-
-    case 'WSMessage':
-    handleWSMessage(data)
-    break
+  hws.onclose = async (event) => {
+    setTimeout(reconnectHWS, 1000)
+  }
+  hws.onerror = async (event) => {
+    console.log('err: hws error'.red)
+    console.log(String(event.message).red)
   }
 }
+
+reconnectHWS()
+
 
 async function handleWSMessage(data) {
   const {uuid} = data
@@ -77,8 +93,8 @@ async function handleHttp(data) {
   applyHeaders({ headers }, res)
   
   // 如果是非text类型的，那么过来的是b64，要转成buffer
-  const isText = /text|application/.test(headers['content-type'])
-  const respData = isText ? body : Buffer.from(body, 'base64')
+  const isText = /text|plain|json|xml|html|htm|css|js|javascript/.test(headers['content-type'])
+  const respData = isText || body === '' ? body : Buffer.from(body, 'base64')
 
   res.status(status).send(respData)
   setTimeout(() => delete resPool[uuid], 1000)
