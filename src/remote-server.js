@@ -25,26 +25,28 @@ higherOrderWS.on('connection', function connection(ws) {
     } else if (event.data === 'nbserver') {
       console.log('nbserver established'.magenta)
       hws.nbserver = ws
+      // 如果存在browser，则browser端需要重连
+      hws.browser && hws.browser.close() // 关闭browser，并等带browser重连
     } else {
       // 普通通信message
       if (ws === hws.nbserver) {
         // nbserver -> browser
+        if (!hws.browser || hws.browser.readyState !== 1) {
+          console.log('can not access hws - browser'.red)
+          return
+        }
         hws.browser.send(event.data)
       } else if (ws === hws.browser) {
         // browser -> nbserver
+        if (!hws.nbserver || hws.nbserver.readyState !== 1) {
+          console.log('can not access hws - nbserver'.red)
+          return
+        }
         hws.nbserver.send(event.data)
       }
     }
 
     totalTransfered += event.data.length
-  }
-  ws.onclose = async (event) => {
-    const { nbserver, browser } = hws
-    if (ws === nbserver) {
-      setTimeout(() => {
-        browser && browser.close()
-      }, 5000)
-    }
   }
   ws.onerror = async (event) => {
     console.log(`\n[${new Date().toLocaleString()}]`.grey,
