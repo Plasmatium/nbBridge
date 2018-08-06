@@ -40,8 +40,11 @@ higherOrderWS.on('connection', function connection(ws) {
   }
   ws.onclose = async (event) => {
     const { nbserver, browser } = hws
-    nbserver && nbserver.close()
-    browser && browser.close()
+    if (ws === nbserver) {
+      setTimeout(() => {
+        browser && browser.close()
+      }, 5000)
+    }
   }
   ws.onerror = async (event) => {
     console.log(`\n[${new Date().toLocaleString()}]`.grey,
