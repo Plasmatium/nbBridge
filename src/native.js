@@ -73,7 +73,7 @@ async function handleCreateWS (data) {
     data.type = 'WSMessage'
     data.uuid = uuid
     const buf = fkData(JSON.stringify(data))
-    hws.send(buf)
+    hws.readyState && hws.send(buf)
   }
   wsClients[uuid] = ws
 }
