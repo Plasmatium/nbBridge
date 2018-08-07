@@ -1,4 +1,5 @@
 const WS = require('ws')
+const fs = require('fs')
 require('colors')
 
 function toThousands(num) {
@@ -67,8 +68,12 @@ function showSizeInfo () {
 
   lastTransfered = totalTransfered
   const sizeData = toThousands(totalTransfered)
-  console.log(`[${new Date().toLocaleString()}]`.grey, 
-              `total transfered: ${sizeData} bytes`.red)
+  const ts = `[${new Date().toLocaleString()}]`
+  const info = `total transfered: ${sizeData} bytes`
+  console.log(ts.grey, info.red)
+
+  // 传输size写入磁盘
+  fs.writeFileSync('transfer-size.log', [ts, info].join(' '), {flag: 'a'})
 }
 
 setInterval(showSizeInfo, 10000)
