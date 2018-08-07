@@ -33,6 +33,8 @@ function reconnectHWS() {
     if (event.data === 'hb') {
       clearTimeout(currHeartBeatTimerId)
       currHeartBeatTimerId = setTimeout(() => {
+        console.log(String(new Date()).cyan)
+        console.log('heart beat loss, reconnecting'.cyan)
         hws.close()
       }, 5 * 60 * 1000)
       return
