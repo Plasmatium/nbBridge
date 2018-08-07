@@ -58,6 +58,7 @@ function reconnectHWS () {
       currHeartBeatTimerId = setTimeout(() => {
         hws.close()
       }, 5 * 60 * 1000)
+      return
     }
 
     const data = JSON.parse(defkData(event.data).toString())
