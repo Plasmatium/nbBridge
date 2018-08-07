@@ -73,7 +73,7 @@ function showSizeInfo () {
   console.log(ts.grey, info.red)
 
   // 传输size写入磁盘
-  fs.writeFileSync('transfer-size.log', [ts, info].join(' '), {flag: 'a'})
+  fs.writeFileSync('transfer-size.log', [ts, info, '\n'].join(' '), {flag: 'a'})
 }
 
 setInterval(showSizeInfo, 10000)
