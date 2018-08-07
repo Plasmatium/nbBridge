@@ -42,12 +42,22 @@ function reconnectHWS () {
   console.log(`\n[${new Date().toLocaleString()}]`.grey,
               `********* reconnecting hws *********`.red)
 
+  let currHeartBeatTimerId = -1
   hws = new WS(REMOTE_HWS_URL)
   hws.onmessage = async (event) => {
     // 远端高阶ws请求label，需自曝家门
     if (event.data === 'request label') {
       hws.send('browser')
       return
+    }
+
+    // hws 心跳机制, 服务器大概4.75min触发一次，这边定时5分钟
+    // 收不到就关闭ws，触发close事件中的重连接
+    if (event.data === 'hb') {
+      clearTimeout(currHeartBeatTimerId)
+      currHeartBeatTimerId = setTimeout(() => {
+        hws.close()
+      }, 5 * 60 * 1000)
     }
 
     const data = JSON.parse(defkData(event.data).toString())

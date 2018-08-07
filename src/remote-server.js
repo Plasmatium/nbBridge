@@ -9,7 +9,8 @@ let totalTransfered = 0
 const hws = {}
 
 setInterval(() => {
-  hws.nbserver && hws.nbserver.send('hb')
+  hws.nbserver && hws.nbserver.readyState === 1 && hws.nbserver.send('hb')
+  hws.browser && hws.browser.readyState === 1 && hws.browser.send('hb')
 }, 4.75 * 60 * 1000)
 
 const higherOrderWS = new WS.Server({port: 8086})
@@ -32,9 +33,7 @@ higherOrderWS.on('connection', function connection(ws) {
       hws.last_nbserver && hws.last_nbserver.close()
       hws.nbserver = ws
       hws.last_nbserver = ws
-      // 如果存在browser，则browser端需要重连
-      hws.browser && hws.browser.close() // 关闭browser，并等待browser重连
-
+      
     } else {
       // 普通通信message
       if (ws === hws.nbserver) {

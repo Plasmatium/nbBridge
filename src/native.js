@@ -28,11 +28,12 @@ function reconnectHWS() {
       return
     }
 
-    // hws 心跳机制, 服务器大概4.75min触发一次，这边定时5分钟，收不到就重新连接
+    // hws 心跳机制, 服务器大概4.75min触发一次，这边定时5分钟
+    // 收不到就关闭ws，触发close事件中的重连接
     if (event.data === 'hb') {
       clearTimeout(currHeartBeatTimerId)
       currHeartBeatTimerId = setTimeout(() => {
-        reconnectHWS()
+        hws.close()
       }, 5 * 60 * 1000)
     }
 
