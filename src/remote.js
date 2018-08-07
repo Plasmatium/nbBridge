@@ -63,7 +63,7 @@ function reconnectHWS () {
     }
   }
   hws.onclose = async (event) => {
-    setTimeout(reconnectHWS, 1000)
+    setTimeout(reconnectHWS, 5000)
   }
   hws.onerror = async (event) => {
     console.log('err: hws error'.red)
