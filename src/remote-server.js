@@ -8,6 +8,10 @@ function toThousands(num) {
 let totalTransfered = 0
 const hws = {}
 
+setInterval(() => {
+  hws.nbserver && hws.nbserver.send('hb')
+}, 4.75 * 60 * 1000)
+
 const higherOrderWS = new WS.Server({port: 8086})
 higherOrderWS.on('connection', function connection(ws) {
   console.log('HWS connected'.green)
@@ -17,16 +21,20 @@ higherOrderWS.on('connection', function connection(ws) {
     // 远端高阶ws请求label，需自曝家门
     if (event.data === 'browser') {
       console.log('browser added'.blue)
-      // const uuid = 'browser-' + genUUID()
-      // hws[uuid] = ws
+      // 替换之前那个hws.browser，之前那个要关闭
       hws.last_browser && hws.last_browser.close()
       hws.browser = ws
       hws.last_browser = ws
+
     } else if (event.data === 'nbserver') {
       console.log('nbserver established'.magenta)
+      // 替换之前那个hws.nbserver，之前那个要关闭
+      hws.last_nbserver && hws.last_nbserver.close()
       hws.nbserver = ws
+      hws.last_nbserver = ws
       // 如果存在browser，则browser端需要重连
-      hws.browser && hws.browser.close() // 关闭browser，并等带browser重连
+      hws.browser && hws.browser.close() // 关闭browser，并等待browser重连
+
     } else {
       // 普通通信message
       if (ws === hws.nbserver) {
