@@ -1,7 +1,9 @@
 const WS = require('ws')
 const fs = require('fs')
+const path = require('path')
 require('colors')
 
+const confDir = path.join(__dirname, 'conf.json')
 let {
   INTERNEL_PORT
 } = JSON.parse(fs.readFileSync(confDir))
