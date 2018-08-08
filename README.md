@@ -36,7 +36,7 @@ cnpm i
 {
   "REMOTE_HWS_URL": "ws://your/ECS/websocket/path",
   "LOCAL_HWS_URL": "ws://your/native/websocket/path",
-  "INTERNEL_PORT": YOUR_INTERNEL_PORT
+  "INTERNEL_PORT": "YOUR_INTERNEL_PORT",
   "KEY":  "pwd_with_16_char",
   "IV":   "iv__widh_16_char",
   "AGL":  "aes-128-cbc"
@@ -67,7 +67,13 @@ location /your/ECS/websocket/path {
 }
 ```
 
+#### 启动两地服务
 
+> 注：两端和ECS都需要放好`conf.json`
+
+1. 在GPU本上首先启动服务：`node src/native.js`
+2. 登陆ECS，启动nginx，启动node服务：`node src/remote-server.js`
+3. Mac上启动node服务：`node src/remote.js`
 
 ## 转发流程
 
@@ -114,3 +120,4 @@ location /your/ECS/websocket/path {
 4. `jupyter notebook`做出回应，会触发上述`uuid`对应的ws的`onmessage`方法。在此方法中，打包回应的`event.data`，连同`uuid`一起打包压缩加密，通过**hws**发往ECS
 5. ECS上用**hws**转发该加密包到Mac上
 6. Mac解码解包，获得`event.data`，`uuid`，通过该`uuid`找到ws池中对应的ws，用该ws发送`event.data`，浏览器将会收到数据并渲染（该ws即浏览器创建在Mac上的websocket）
+
