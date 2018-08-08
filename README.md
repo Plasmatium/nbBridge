@@ -1,5 +1,3 @@
-[TOC]
-
 # NoteBook Bridge
 
 ## 背景
