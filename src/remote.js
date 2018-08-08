@@ -52,11 +52,14 @@ function reconnectHWS () {
     }
 
     // hws 心跳机制, 服务器大概4.75min触发一次，这边定时5分钟
-    // 收不到就关闭ws，触发close事件中的重连接
+    // 收不到就关闭ws，并主动重连（用close事件触发，不靠谱）
     if (event.data === 'hb') {
       clearTimeout(currHeartBeatTimerId)
       currHeartBeatTimerId = setTimeout(() => {
+        console.log(String(new Date()).cyan)
+        console.log('heart beat loss, reconnecting'.cyan)
         hws.close()
+        reconnectHWS()
       }, 5 * 60 * 1000)
       return
     }

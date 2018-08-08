@@ -2,6 +2,10 @@ const WS = require('ws')
 const fs = require('fs')
 require('colors')
 
+let {
+  INTERNEL_PORT
+} = JSON.parse(fs.readFileSync(confDir))
+
 function toThousands(num) {
   return (num || 0).toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
 }
@@ -14,7 +18,7 @@ setInterval(() => {
   hws.browser && hws.browser.readyState === 1 && hws.browser.send('hb')
 }, 4.75 * 60 * 1000)
 
-const higherOrderWS = new WS.Server({port: 8086})
+const higherOrderWS = new WS.Server({port: INTERNEL_PORT})
 higherOrderWS.on('connection', function connection(ws) {
   console.log('HWS connected'.green)
   

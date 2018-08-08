@@ -3,3 +3,4 @@ __pycache__/
 .vscode/
 src/conf.json
 transfer-size.log
+nginx.conf
