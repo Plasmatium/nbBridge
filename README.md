@@ -121,3 +121,6 @@ location /your/ECS/websocket/path {
 5. ECS上用**hws**转发该加密包到Mac上
 6. Mac解码解包，获得`event.data`，`uuid`，通过该`uuid`找到ws池中对应的ws，用该ws发送`event.data`，浏览器将会收到数据并渲染（该ws即浏览器创建在Mac上的websocket）
 
+## Flow示意图
+
+![示意图](https://github.com/Plasmatium/nbBridge/raw/master/flow.png)
